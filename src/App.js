@@ -6,7 +6,7 @@ import $ from 'jquery';
 import { createMoveTree, makeMove, getMove } from './stringParser';
 import { Chess } from 'chess.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLeft } from "@fortawesome/free-solid-svg-icons";
+import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 
 // create moveTree nested dictionary and current branch var (shallow copy)
 // play the first (few?) move(s) without input for white
@@ -250,6 +250,29 @@ async function setUpBoard() {
 }
 setUpBoard();
 
+class Toggle extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      state: props.state
+    }
+    this.toggle = this.toggle.bind(this);
+  }
+
+  toggle() {
+    this.setState({state: this.state.state == 'on' ? 'off' : 'on'});
+  }
+
+  render() {
+    return (
+      <button className="toggle" onClick={this.toggle}>
+        Skip to first branch
+        <FontAwesomeIcon className="toggle-icon" icon={this.state.state == 'on' ? faToggleOn : faToggleOff} />
+      </button>
+    );
+  }
+}
+
 class Sidebar extends Component {
   render() {
     return (
@@ -268,7 +291,10 @@ class Sidebar extends Component {
             <input type="radio" name="color" value="" id="white" onClick={white} />
           </label>
         </div>
-        Skip to first branch
+        <div className="branch-skip-option">
+          <Toggle state="off" />
+        </div>
+        
       </div>
     );
   }
