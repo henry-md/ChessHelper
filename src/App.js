@@ -53,6 +53,7 @@ let board;
 let moveTree = createMoveTree();
 let currBranch = moveTree; // shallow copy
 let lastBranchingDict = moveTree;
+let previousBranchingDict = {};
 let lastBranchingKey = '';
 let gameOver = false;
 let leftCounter = 0;
@@ -129,13 +130,46 @@ function hint() {
 function computerMove() {
   move = makeMove(currBranch);
   if (lastBranchingKey == '') lastBranchingKey = move;
+  console.log('lastBranchingKey set 1', lastBranchingKey)
   game.move(move);
   board.setPosition(game.fen());
   if (Object.keys(currBranch).length > 1) {
     lastBranchingDict = currBranch;
+    previousBranchingDict = currBranch;
     lastBranchingKey = move;
+    console.log('lastBranchingDict set 2', lastBranchingDict)
   }
   currBranch = currBranch[move];
+}
+
+async function playFirstMoves() {
+
+  // play all the moves with no alternatives
+  while (Object.keys(currBranch).length == 1 && currBranch != previousBranchingDict) {
+    console.log('continued b/c', 'len of movetree', Object.keys(currBranch).length, 'currBranch', currBranch, 'lastBranchingDict', lastBranchingDict, 'moveTree', moveTree);
+    move = makeMove(currBranch);
+    if (lastBranchingKey == '') lastBranchingKey = move;
+    game.move(move);
+    board.setPosition(game.fen());
+    currBranch = currBranch[move];
+    await delay(200);
+  }
+
+  // update branching vars
+  if (Object.keys(currBranch).length > 1) {
+    lastBranchingDict = currBranch;
+    previousBranchingDict = currBranch;
+    lastBranchingKey = move;
+    console.log('lastBranchingDict set 3', lastBranchingDict)
+  }
+
+  // if it's the computer's move, make the branching move
+  let whosMove = game.turn() == 'w' ? 'white' : 'black';
+  if (localStorage.getItem('playAs') != whosMove) {
+    await delay(200); // wait extra long before branching move
+    computerMove();
+  }
+
 }
 
 async function validateUserMove(userMove) {
@@ -153,10 +187,12 @@ async function validateUserMove(userMove) {
     return false;
   }
   if (lastBranchingKey == '') lastBranchingKey = move;
-  console.log('move', move, 'branches', Object.keys(currBranch).length, 'times');
+  console.log('lastBranchingKey set 4', lastBranchingKey)
   if (Object.keys(currBranch).length > 1) {
     lastBranchingDict = currBranch;
+    previousBranchingDict = currBranch;
     lastBranchingKey = move;
+    console.log('lastBranchingDict set 5', lastBranchingDict)
   }
   console.log('now lastBranchingDict is', lastBranchingDict, 'and lastBranchingKey is', lastBranchingKey);
   return true;
@@ -169,8 +205,10 @@ async function setUpBoard() {
   const board = document.querySelector('chess-board');
   board.start();
 
-  // play the first move if computer is white
-  if (localStorage.getItem('playAs') == 'black') {
+  // let computer play the first move(s) maybe
+  if (localStorage['skipMoves'] == 'true') {
+    playFirstMoves();
+  } else if (localStorage.getItem('playAs') == 'black') {
     computerMove();
   }
 
@@ -179,6 +217,7 @@ async function setUpBoard() {
   //   if there are no more moves on branch, recurse to last point at which branch has 1 path and delete that branch you just went down
   //   choose random move from branch and change current branch
   board.addEventListener('drop', async (e) => {
+
     // validate users move
     move = getMove(e.detail.newPosition, e.detail.oldPosition);
     try {
@@ -211,8 +250,10 @@ async function setUpBoard() {
         return;
       }
 
-      // play first move if computer is white
-      if (localStorage.getItem('playAs') == 'black') {
+      // let computer play first move(s) maybe
+      if (localStorage['skipMoves'] == 'true') {
+        playFirstMoves();
+      } else if (localStorage.getItem('playAs') == 'black') {
         computerMove();
       }
     } else {
@@ -242,8 +283,10 @@ async function setUpBoard() {
         return;
       }
 
-      // play first move if computer is white
-      if (localStorage.getItem('playAs') == 'black') {
+      // let computer play first move(s) maybe
+      if (localStorage['skipMoves'] == 'true') {
+        playFirstMoves();
+      } else if (localStorage.getItem('playAs') == 'black') {
         computerMove();
       }
     }

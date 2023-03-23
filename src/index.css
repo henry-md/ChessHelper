@@ -15,6 +15,7 @@ body {
 .App {
   background-color: var(--off-white);
   margin: 0;
+  padding: 40px 40px 0 40px !important;
 }
 * {
   font-family: Verdana, Geneva, sans-serif;
