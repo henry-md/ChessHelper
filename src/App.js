@@ -114,7 +114,6 @@ function wrongMove() {
 function hint() {
   if (gameOver) return;
   let correctMove = makeMove(currBranch);
-  console.log('correctMove', correctMove)
   let originalPosition = game.fen();
   game.move(correctMove);
   board.setPosition(game.fen());
@@ -137,6 +136,30 @@ function computerMove() {
   currBranch = currBranch[move];
 }
 
+async function validateUserMove(userMove) {
+  if (currBranch[userMove + '+'] != undefined) userMove += '+';
+  if (currBranch[userMove + '#'] != undefined) userMove += '#';
+  if (currBranch['O-O'] != undefined && (userMove == 'Kg8' || userMove== 'Kg1')) userMove = 'O-O';
+  if (currBranch['O-O-O'] != undefined && (userMove == 'Kc8' || userMove == 'Kc1')) userMove = 'O-O-O';
+  // console.log('event called on userMove', userMove, 'with event object', e.detail);
+  if (currBranch[userMove] == undefined) {
+    console.log('invalid b/c', userMove, 'is not in currBranch, ', Object.keys(currBranch));
+    wrongMove();
+    leftCounter = 0;
+    await delay(200);
+    board.setPosition(game.fen());
+    return false;
+  }
+  if (lastBranchingKey == '') lastBranchingKey = move;
+  console.log('move', move, 'branches', Object.keys(currBranch).length, 'times');
+  if (Object.keys(currBranch).length > 1) {
+    lastBranchingDict = currBranch;
+    lastBranchingKey = move;
+  }
+  console.log('now lastBranchingDict is', lastBranchingDict, 'and lastBranchingKey is', lastBranchingKey);
+  return true;
+}
+
 const delay = ms => new Promise(res => setTimeout(res, ms));
 async function setUpBoard() {
   // load board
@@ -146,36 +169,21 @@ async function setUpBoard() {
 
   // play the first move if computer is white
   if (localStorage.getItem('playAs') == 'black') {
-    // move = makeMove(currBranch);
-    // game.move(move);
-    // board.setPosition(game.fen());
-    // currBranch = currBranch[move];
-    // lastBranchingKey = move;
     computerMove();
   }
-  
 
   // on input from user:
   //   if input was not a valid option on current branch, throw error
   //   if there are no more moves on branch, recurse to last point at which branch has 1 path and delete that branch you just went down
   //   choose random move from branch and change current branch
   board.addEventListener('drop', async (e) => {
-    
     // validate users move
     move = getMove(e.detail.newPosition, e.detail.oldPosition);
-    if (move == 'Kg8') move = 'O-O';
-    if (currBranch[move + '+'] != undefined) move += '+';
-    if (currBranch[move + '#'] != undefined) move += '#';
-    // console.log('event called on move', move, 'with event object', e.detail);
-    if (currBranch[move] == undefined) {
-      console.log('invalid b/c', move, 'is not in currBranch, ', Object.keys(currBranch));
-      wrongMove();
-      leftCounter = 0;
-      await delay(200);
-      board.setPosition(game.fen());
-      return;
-    }
-
+    try {
+      let valid = await validateUserMove(move);
+      if (!valid) return;
+    } catch(e) { console.log('error', e); }
+    
     // play users move
     game.move(move);
     currBranch = currBranch[move];
@@ -188,29 +196,27 @@ async function setUpBoard() {
       currBranch = moveTree;
 
       // prune moveTree
+      console.log('pruning 1');
       console.log('pruning', lastBranchingKey, 'from', lastBranchingDict)
       delete lastBranchingDict[lastBranchingKey];
       lastBranchingDict = moveTree;
       lastBranchingKey = '';
+      currBranch = moveTree;
 
       // check if all branches have been played
       if (Object.keys(currBranch).length == 0) {
         roundComplete();
         return;
       }
-    }
 
-    // play computer response
-    // move = makeMove(currBranch);
-    // if (lastBranchingKey == '') lastBranchingKey = move;
-    // game.move(move);
-    // board.setPosition(game.fen());
-    // if (Object.keys(currBranch).length > 1) {
-    //   lastBranchingDict = currBranch;
-    //   lastBranchingKey = move;
-    // }
-    // currBranch = currBranch[move];
-    computerMove();
+      // play first move if computer is white
+      if (localStorage.getItem('playAs') == 'black') {
+        computerMove();
+      }
+    } else {
+      // play computer response
+      computerMove();
+    }
 
     // if end of branch is reached, restart and play first move again
     if (Object.keys(currBranch).length == 0) {
@@ -219,8 +225,14 @@ async function setUpBoard() {
       board.setPosition(game.fen());
 
       // prune moveTree
+      console.log('pruning 2');
+      console.log('pruning', lastBranchingKey, 'from', lastBranchingDict);
       delete lastBranchingDict[lastBranchingKey];
       lastBranchingDict = moveTree;
+      lastBranchingKey = '';
+      console.log('movetree is now', moveTree);
+      currBranch = moveTree;
+
 
       // check if all branches have been played
       if (Object.keys(moveTree).length == 0) {
@@ -228,12 +240,10 @@ async function setUpBoard() {
         return;
       }
 
-      // otherwise, play first move
-      move = makeMove(moveTree);
-      lastBranchingKey = move;
-      game.move(move);
-      board.setPosition(game.fen());
-      currBranch = moveTree[move];
+      // play first move if computer is white
+      if (localStorage.getItem('playAs') == 'black') {
+        computerMove();
+      }
     }
   });
   
@@ -250,7 +260,7 @@ class Sidebar extends Component {
         <textarea></textarea>
         
         <div className="color-picker">
-        Play as: 
+          Play as: 
           <label className="label-black">
             <input type="radio" name="color" value="" id="black" onClick={black} />
           </label>
@@ -258,7 +268,7 @@ class Sidebar extends Component {
             <input type="radio" name="color" value="" id="white" onClick={white} />
           </label>
         </div>
-        
+        Skip to first branch
       </div>
     );
   }

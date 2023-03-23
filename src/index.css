@@ -1,7 +1,26 @@
+:root {
+  --dark: rgb(22, 21, 18);
+  --off-white: rgb(255, 250, 237);
+  --side-panel: rgba(255, 223, 206, 0.518);
+  --textarea-color: rgba(255, 252, 250, 0.518);
+  --textarea-border: rgb(184, 167, 139);
+  --text-color: rgb(76, 25, 0);
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.App {
+  background-color: var(--off-white);
+  margin: 0;
+}
 * {
   font-family: Verdana, Geneva, sans-serif;
   font-size: 15px;
   box-sizing: border-box;
+  color: var(--text-color);
 }
 /* disable button default behavior */
 button {
@@ -11,9 +30,7 @@ button {
   outline: none;
   padding: 0;
   margin: 0;
-
 }
-
 
 chess-board {
   width: 600px;
@@ -32,7 +49,7 @@ chess-board {
 .sidebar {
   width: 300px;
   height: 600px;
-  background-color: #f5f5f5;
+  background-color: var(--side-panel);
   border: 1px solid #e8e8e8;
   border-radius: 4px;
   font-family: Verdana, Geneva, sans-serif;
@@ -47,9 +64,11 @@ chess-board {
 textarea {
   width: 80%;
   height: 380px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--textarea-border);
   border-radius: 4px;
   padding: 10px;
+  background-color: var(--textarea-color);
+  resize: none;
 }
 
 /* disable textarea default behavior */
@@ -68,12 +87,11 @@ textarea:focus {
 
 .info-bar {
   background-color: rgb(181, 136, 99); /* rgb(181, 136, 99) dark rgb(240, 217, 181) light */
-  color: black;
+  color: var(--text-color);
 }
 
 .hint {
   background-color: rgb(240, 217, 181) ;
-  color: black;
   border:1px solid rgb(184, 167, 139);
   padding: 8px !important; /* the lack of text makes it seem bigger -- optical illusion */
 }
