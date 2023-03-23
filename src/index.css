@@ -173,7 +173,7 @@ input[type="radio"] {
   opacity: 0.4;
 } */
 
-button.toggle {
+button.skipMoves {
   display: flex;
   flex-direction: row;
   align-items: center;

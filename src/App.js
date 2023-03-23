@@ -20,29 +20,31 @@ if (localStorage.getItem('playAs') == null) {
   localStorage.setItem('playAs', 'white');
 }
 setTimeout(() => {
-  if (localStorage.getItem('playAs') == 'white') white();
-  else black();
+  if (localStorage.getItem('playAs') == 'white') playAsColor('white');
+  else playAsColor('black');
   board = document.getElementById('board');
 }, 100);
 
-function white() {
-  if (localStorage['playAs'] == 'black') {
+function playAsColor(color) { // 'white' or 'black'
+  if (color != 'white' && color != 'black') throw new Error('color must be "white" or "black"');
+  if (localStorage['playAs'] != color) {
     window.location.reload();
   };
-  localStorage.setItem('playAs', 'white');
-  document.getElementById('white').checked = true;
-  document.getElementById('board').orientation = 'white';
-  console.log('white');
+  localStorage.setItem('playAs', color);
+  document.getElementById(color).checked = true;
+  document.getElementById('board').orientation = color;
 }
 
-function black() {
-  if (localStorage['playAs'] == 'white') {
-    window.location.reload();
-  };
-  localStorage.setItem('playAs', 'black');
-  document.getElementById('black').checked = true;
-  document.getElementById('board').orientation = 'black';
-  console.log('black');
+// set toggle state
+if (localStorage['skipMoves'] == null) {
+  localStorage.setItem('skipMoves', 'false');
+}
+// setTimeout(() => {
+//   toggleSkipMoves(localStorage['skipMoves']);
+// }, 100);
+
+function setSkipMoves(desiredState) {
+  localStorage['skipMoves'] = desiredState;
 }
 
 // create moveTree nested dictionary and current branch
@@ -254,20 +256,24 @@ class Toggle extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      state: props.state
-    }
-    this.toggle = this.toggle.bind(this);
+      toggle: this.props.toggle
+    };
+    this.toggleSelf = this.toggleSelf.bind(this);
   }
 
-  toggle() {
-    this.setState({state: this.state.state == 'on' ? 'off' : 'on'});
+  toggleSelf() {
+    this.setState({
+      toggle: this.state.toggle == 'true' ? 'false' : 'true'
+    }, () => {
+      setSkipMoves(this.state.toggle);
+    });
   }
 
   render() {
     return (
-      <button className="toggle" onClick={this.toggle}>
+      <button className="skipMoves" onClick={this.toggleSelf}>
         Skip to first branch
-        <FontAwesomeIcon className="toggle-icon" icon={this.state.state == 'on' ? faToggleOn : faToggleOff} />
+        <FontAwesomeIcon className="toggle-icon" icon={this.state.toggle == 'true' ? faToggleOn : faToggleOff} />
       </button>
     );
   }
@@ -285,14 +291,14 @@ class Sidebar extends Component {
         <div className="color-picker">
           Play as: 
           <label className="label-black">
-            <input type="radio" name="color" value="" id="black" onClick={black} />
+            <input type="radio" name="color" value="" id="black" onClick={() => playAsColor('black')} />
           </label>
           <label className="label-white">
-            <input type="radio" name="color" value="" id="white" onClick={white} />
+            <input type="radio" name="color" value="" id="white" onClick={() => playAsColor('white')} />
           </label>
         </div>
         <div className="branch-skip-option">
-          <Toggle state="off" />
+          <Toggle toggle={localStorage['skipMoves']} />
         </div>
         
       </div>
