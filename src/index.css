@@ -1,0 +1,156 @@
+* {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+/* disable button default behavior */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  margin: 0;
+
+}
+
+
+chess-board {
+  width: 600px;
+}
+
+.App {
+  padding: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  gap: 20px;
+}
+
+.sidebar {
+  width: 300px;
+  height: 600px;
+  background-color: #f5f5f5;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  gap: 10px;
+}
+
+textarea {
+  width: 80%;
+  height: 380px;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+/* disable textarea default behavior */
+textarea:focus {
+  outline: none;
+  border: 2px solid #aaa;
+  box-sizing: border-box;
+}
+
+.info-bar, .hint {
+  padding: 10px;
+  margin: 0;
+  width: 80%;
+  border-radius: 4px;
+}
+
+.info-bar {
+  background-color: rgb(181, 136, 99); /* rgb(181, 136, 99) dark rgb(240, 217, 181) light */
+  color: black;
+}
+
+.hint {
+  background-color: rgb(240, 217, 181) ;
+  color: black;
+  border:1px solid rgb(184, 167, 139);
+  padding: 8px !important; /* the lack of text makes it seem bigger -- optical illusion */
+}
+
+.regularText::after {
+  content: 'Find the best move!';
+}
+
+.displayWrongMove {
+  background-color: rgb(255, 133, 85);
+  color: rgb(99, 25, 0);
+}
+
+.displayWrongMove::after {
+  content: 'Try again!';
+}
+
+.roundComplete {
+  background-color: rgb(57, 201, 0);
+  color: rgb(15, 61, 0);
+  opacity: 1;
+}
+
+.roundComplete::after {
+  content: 'Good shit!';
+}
+
+.gameOver {
+  opacity: 0.4;
+}
+
+
+/* play as black / white section */
+
+.color-picker {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 5px 0 0 0;
+}
+
+input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  margin: 0;
+  display: inline;
+}
+
+.label-white, .label-black {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline;
+}
+
+.label-white {
+  background-color: rgb(240, 217, 181);
+}
+.label-black {
+  background-color: rgb(181, 136, 99);
+}
+
+.label-white:has(> input[type="radio"]:checked) { /* :has not supported on Firefox (only) */
+  border: 2px solid rgb(130, 118, 98);
+}
+.label-black:has(> input[type="radio"]:checked) { /* :has not supported on Firefox (only) */
+  border: 2px solid rgb(86, 65, 47);
+}
+
+/* .label-white:not(:has(> input[type="radio"]:checked)) {
+  opacity: 0.8;
+}
+.label-black:not(:has(> input[type="radio"]:checked)) {
+  opacity: 0.4;
+} */
