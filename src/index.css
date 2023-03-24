@@ -118,7 +118,7 @@ textarea:focus {
 }
 
 .roundComplete::after {
-  content: 'Good shit!';
+  content: 'You finished all lines!';
 }
 
 .gameOver {

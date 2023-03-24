@@ -2,10 +2,10 @@
 # ui board api
 https://justinfagnani.github.io/chessboard-element/examples/1002-fen/
 
-# chess engine that can accept actual chess notation, not 'e2-e4' bullshit
+# chess engine
 https://github.com/jhlywa/chess.js
 
-# todo
-- make it playable for white as well
-    - add icon to flip the board
-    - add some sort of button to play as black or white
+# Instructions on using website
+- Copy and paste the move notation on Stockfish into the text box.
+- Play along with the computer by exhausting all lines you put into Stockfish.
+yeah, pretty self explanatory.
