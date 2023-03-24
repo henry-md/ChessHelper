@@ -1,5 +1,6 @@
 {
   "name": "chess-helper",
+  "homepage": "http://henrymdeutsch.github.io/ChessHelper",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
