@@ -15,6 +15,26 @@ import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 //   if there are no more moves on branch, recurse to last point at which branch has 1 path and delete that branch you just went down
 //   choose random move from branch and change current branch
 
+
+// if you can fill the textarea with a value from localStorage, do it and call setUpBoard();
+// either way, set up an event listener: on textarea input, save the value to localStorage and reload the page
+setTimeout(() => {
+  let textarea = document.getElementById('notationArea');
+  if (textarea.value == '' && localStorage['notation'] != undefined) {
+    textarea.value = localStorage['notation'];
+    setUpBoard();
+  }
+
+  // set event listener
+  textarea.addEventListener('input', () => {
+    console.log('textarea value is', textarea.value);
+    localStorage['notation'] = textarea.value;
+    console.log('now localStorage notation is', localStorage['notation']);
+    window.location.reload();
+  });
+
+}, 100);
+
 // set up color
 if (localStorage.getItem('playAs') == null) {
   localStorage.setItem('playAs', 'white');
@@ -50,9 +70,9 @@ function setSkipMoves(desiredState) {
 // create moveTree nested dictionary and current branch
 let game = new Chess();
 let board;
-let moveTree = createMoveTree();
-let currBranch = moveTree; // shallow copy
-let lastBranchingDict = moveTree;
+let moveTree;
+let currBranch; // shallow copy
+let lastBranchingDict;
 let previousBranchingDict = {};
 let lastBranchingKey = '';
 let gameOver = false;
@@ -130,7 +150,7 @@ function hint() {
 function computerMove() {
   move = makeMove(currBranch);
   if (lastBranchingKey == '') lastBranchingKey = move;
-  console.log('lastBranchingKey set 1', lastBranchingKey)
+  console.log('telling computer to play', move);
   game.move(move);
   board.setPosition(game.fen());
   if (Object.keys(currBranch).length > 1) {
@@ -144,14 +164,20 @@ function computerMove() {
 
 async function playFirstMoves() {
 
+  if (currBranch == undefined) {
+    console.log('ERROR: currBranch is undefined');
+    return;
+  }
+
   // play all the moves with no alternatives
   while (Object.keys(currBranch).length == 1 && currBranch != previousBranchingDict) {
-    console.log('continued b/c', 'len of movetree', Object.keys(currBranch).length, 'currBranch', currBranch, 'lastBranchingDict', lastBranchingDict, 'moveTree', moveTree);
-    move = makeMove(currBranch);
-    if (lastBranchingKey == '') lastBranchingKey = move;
-    game.move(move);
-    board.setPosition(game.fen());
-    currBranch = currBranch[move];
+    // console.log('continued b/c', 'len of movetree', Object.keys(currBranch).length, 'currBranch', currBranch, 'lastBranchingDict', lastBranchingDict, 'moveTree', moveTree);
+    // move = makeMove(currBranch);
+    // if (lastBranchingKey == '') lastBranchingKey = move;
+    // game.move(move);
+    // board.setPosition(game.fen());
+    // currBranch = currBranch[move];
+    computerMove();
     await delay(200);
   }
 
@@ -166,10 +192,11 @@ async function playFirstMoves() {
   // if it's the computer's move, make the branching move
   let whosMove = game.turn() == 'w' ? 'white' : 'black';
   if (localStorage.getItem('playAs') != whosMove) {
-    await delay(200); // wait extra long before branching move
+    await delay(500); // wait extra long before branching move
     computerMove();
   }
 
+  // TODO: check if game is over -- if the only branching move was just made by the computer.
 }
 
 async function validateUserMove(userMove) {
@@ -177,6 +204,16 @@ async function validateUserMove(userMove) {
   if (currBranch[userMove + '#'] != undefined) userMove += '#';
   if (currBranch['O-O'] != undefined && (userMove == 'Kg8' || userMove== 'Kg1')) userMove = 'O-O';
   if (currBranch['O-O-O'] != undefined && (userMove == 'Kc8' || userMove == 'Kc1')) userMove = 'O-O-O';
+
+  // check for moves like Nfd2 and Nfd2+ and Nfd2#
+  let moveKeys = Object.keys(currBranch);
+  for (let i = 0; i < moveKeys.length; i++) {
+    if (moveKeys[i].length >= 4 && (moveKeys[i][0] + moveKeys[i].slice(2) == userMove || moveKeys[i][0] + moveKeys[i].slice(2, -1) == userMove)) {
+      userMove = moveKeys[i];
+      break;
+    }
+  }
+
   // console.log('event called on userMove', userMove, 'with event object', e.detail);
   if (currBranch[userMove] == undefined) {
     console.log('invalid b/c', userMove, 'is not in currBranch, ', Object.keys(currBranch));
@@ -184,22 +221,35 @@ async function validateUserMove(userMove) {
     leftCounter = 0;
     await delay(200);
     board.setPosition(game.fen());
-    return false;
+    return '-';
   }
-  if (lastBranchingKey == '') lastBranchingKey = move;
-  console.log('lastBranchingKey set 4', lastBranchingKey)
+  if (lastBranchingKey == '') lastBranchingKey = userMove;
   if (Object.keys(currBranch).length > 1) {
     lastBranchingDict = currBranch;
     previousBranchingDict = currBranch;
-    lastBranchingKey = move;
+    lastBranchingKey = userMove;
     console.log('lastBranchingDict set 5', lastBranchingDict)
   }
   console.log('now lastBranchingDict is', lastBranchingDict, 'and lastBranchingKey is', lastBranchingKey);
-  return true;
+  return userMove;
+}
+
+function pruneMoveTree() {
+  console.log('pruning', lastBranchingKey, 'from', lastBranchingDict)
+  delete lastBranchingDict[lastBranchingKey];
+  lastBranchingDict = moveTree;
+  lastBranchingKey = '';
+  currBranch = moveTree;
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 async function setUpBoard() {
+  console.log('calling setUpBoard w/ localstorage', localStorage['notation']);
+  moveTree = createMoveTree();
+  currBranch = moveTree; // shallow copy
+  lastBranchingDict = moveTree;
+  console.log('moveTree initially set to', moveTree);
+
   // load board
   await delay(100);
   const board = document.querySelector('chess-board');
@@ -221,28 +271,25 @@ async function setUpBoard() {
     // validate users move
     move = getMove(e.detail.newPosition, e.detail.oldPosition);
     try {
-      let valid = await validateUserMove(move);
-      if (!valid) return;
+      move = await validateUserMove(move);
+      if (move == '-') return;
     } catch(e) { console.log('error', e); }
     
     // play users move
+    console.log('user move validated', move, 'currBranch is now', currBranch);
     game.move(move);
     currBranch = currBranch[move];
+    // console.log('currBranch set to', currBranch);
     await delay(200);
 
-    // if end of branch is reached, restart (first move will be played below)
+    // if end of branch is reached, restart and play computer first move(s), if any
     if (Object.keys(currBranch).length == 0) {
       game = new Chess();
       board.setPosition(game.fen());
       currBranch = moveTree;
 
       // prune moveTree
-      console.log('pruning 1');
-      console.log('pruning', lastBranchingKey, 'from', lastBranchingDict)
-      delete lastBranchingDict[lastBranchingKey];
-      lastBranchingDict = moveTree;
-      lastBranchingKey = '';
-      currBranch = moveTree;
+      pruneMoveTree();
 
       // check if all branches have been played
       if (Object.keys(currBranch).length == 0) {
@@ -268,14 +315,7 @@ async function setUpBoard() {
       board.setPosition(game.fen());
 
       // prune moveTree
-      console.log('pruning 2');
-      console.log('pruning', lastBranchingKey, 'from', lastBranchingDict);
-      delete lastBranchingDict[lastBranchingKey];
-      lastBranchingDict = moveTree;
-      lastBranchingKey = '';
-      console.log('movetree is now', moveTree);
-      currBranch = moveTree;
-
+      pruneMoveTree();
 
       // check if all branches have been played
       if (Object.keys(moveTree).length == 0) {
@@ -293,7 +333,7 @@ async function setUpBoard() {
   });
   
 }
-setUpBoard();
+// setUpBoard(); // don't actually call until you've loaded moveTree.
 
 class Toggle extends Component {
   constructor(props) {
@@ -329,7 +369,7 @@ class Sidebar extends Component {
         <h3>Theory Training!</h3>
         <div className="info-bar regularText"></div>
         <button className="hint" onClick={hint}>Hint</button>
-        <textarea></textarea>
+        <textarea id="notationArea"></textarea>
         
         <div className="color-picker">
           Play as: 
