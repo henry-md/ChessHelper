@@ -48,9 +48,10 @@ function createMoveTree() {
         }
     }
     let treeDict = {}
+    let numLeaves = practiceStr.split('(').length;
     applyListToDict(0, practiceMoves.length - 1, treeDict);
     // console.log('this particular tree:', treeDict['e4']['e5']['Nf3']['Nf6']['Bc4']['Nxe4']['Nxe5']['d5']['Bb3']['Qg5']['Qf3']['Qxe5']['d3'])
-    return treeDict;
+    return [treeDict, numLeaves];
     
 }
 createMoveTree();

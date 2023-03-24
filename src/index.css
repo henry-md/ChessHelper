@@ -58,8 +58,9 @@ chess-board {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 0;
+  padding: 20px 0 30px 0;
   gap: 10px;
+  position: relative;
 }
 
 textarea {
@@ -187,4 +188,27 @@ button.skipMoves {
 .toggle-icon {
   font-size: 20px !important;
   padding: 0px 0 0 0;
+}
+
+.progress-bar {
+  width: 80%;
+  height: 10px;
+  border-radius: 4px;
+  border: 1px solid rgb(184, 167, 139);
+  /*margin: 10px 0 0 0;
+  padding: 0 10px;
+  */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  position: absolute;
+  bottom: 10px;
+}
+
+.progress {
+  height: 100%;
+  border-radius: 2px;
+  background-color: rgb(181, 136, 99);
+  transition: width 1s ease-in-out;
 }

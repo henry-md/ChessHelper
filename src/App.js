@@ -78,6 +78,8 @@ let lastBranchingKey = '';
 let gameOver = false;
 let leftCounter = 0;
 let move = '';
+let numLeaves = 0;
+let numLeavesVisited = 0;
 
 document.onkeydown = function (e) {
   e = e || window.event;
@@ -148,7 +150,7 @@ function hint() {
 }
 
 async function computerMove() {
-  await delay(200);
+  await delay(100);
   // check if there are any moves left
   if (Object.keys(currBranch).length == 0) {
     roundComplete();
@@ -165,7 +167,7 @@ async function computerMove() {
     lastBranchingKey = move;
   }
   currBranch = currBranch[move];
-  await delay(200);
+  await delay(100);
 }
 
 async function playFirstMoves() {
@@ -242,6 +244,11 @@ function pruneMoveTree() {
 async function restartIfLeafIsReached() {
   if (Object.keys(currBranch).length != 0) return false;
   while (Object.keys(currBranch).length == 0) {
+    numLeavesVisited++;
+    let progressBar = document.getElementsByClassName('progress')[0];
+    if (progressBar != undefined) {
+      progressBar.style.width = '' + Math.ceil(numLeavesVisited / numLeaves * 100) + '%';
+    }
     game = new Chess();
     board.setPosition(game.fen());
     currBranch = moveTree;
@@ -269,7 +276,7 @@ async function restartIfLeafIsReached() {
 const delay = ms => new Promise(res => setTimeout(res, ms));
 async function setUpBoard() {
   console.log('calling setUpBoard w/ localstorage', localStorage['notation']);
-  moveTree = createMoveTree();
+  [moveTree, numLeaves] = createMoveTree();
   currBranch = moveTree; // shallow copy
   lastBranchingDict = moveTree;
   console.log('moveTree initially set to', moveTree);
@@ -339,6 +346,21 @@ class Toggle extends Component {
   }
 }
 
+
+class ProgressBar extends Component {
+  constructor(props) {
+    super(props);
+    console.log('progress bar props percentage:', this.props.percentage);
+  }
+  render() {
+    return (
+      <div className="progress-bar">
+        <div className="progress"></div>
+      </div>
+    );
+  }
+}
+
 class Sidebar extends Component {
   render() {
     return (
@@ -357,10 +379,8 @@ class Sidebar extends Component {
             <input type="radio" name="color" value="" id="white" onClick={() => playAsColor('white')} />
           </label>
         </div>
-        <div className="branch-skip-option">
-          <Toggle toggle={localStorage['skipMoves']} />
-        </div>
-        
+        <Toggle toggle={localStorage['skipMoves']} />
+        <ProgressBar percentage={numLeavesVisited / numLeaves} />
       </div>
     );
   }
