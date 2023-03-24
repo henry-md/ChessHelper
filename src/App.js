@@ -147,7 +147,13 @@ function hint() {
 
 }
 
-function computerMove() {
+async function computerMove() {
+  await delay(200);
+  // check if there are any moves left
+  if (Object.keys(currBranch).length == 0) {
+    roundComplete();
+    return;
+  }
   move = makeMove(currBranch);
   if (lastBranchingKey == '') lastBranchingKey = move;
   console.log('telling computer to play', move);
@@ -157,9 +163,9 @@ function computerMove() {
     lastBranchingDict = currBranch;
     previousBranchingDict = currBranch;
     lastBranchingKey = move;
-    console.log('lastBranchingDict set 2', lastBranchingDict)
   }
   currBranch = currBranch[move];
+  await delay(200);
 }
 
 async function playFirstMoves() {
@@ -171,14 +177,7 @@ async function playFirstMoves() {
 
   // play all the moves with no alternatives
   while (Object.keys(currBranch).length == 1 && currBranch != previousBranchingDict) {
-    // console.log('continued b/c', 'len of movetree', Object.keys(currBranch).length, 'currBranch', currBranch, 'lastBranchingDict', lastBranchingDict, 'moveTree', moveTree);
-    // move = makeMove(currBranch);
-    // if (lastBranchingKey == '') lastBranchingKey = move;
-    // game.move(move);
-    // board.setPosition(game.fen());
-    // currBranch = currBranch[move];
-    computerMove();
-    await delay(200);
+    await computerMove();
   }
 
   // update branching vars
@@ -186,17 +185,15 @@ async function playFirstMoves() {
     lastBranchingDict = currBranch;
     previousBranchingDict = currBranch;
     lastBranchingKey = move;
-    console.log('lastBranchingDict set 3', lastBranchingDict)
   }
 
   // if it's the computer's move, make the branching move
   let whosMove = game.turn() == 'w' ? 'white' : 'black';
   if (localStorage.getItem('playAs') != whosMove) {
-    await delay(500); // wait extra long before branching move
-    computerMove();
+    await delay(500); // wait extra long before making branching move
+    await computerMove();
+    await delay(500);
   }
-
-  // TODO: check if game is over -- if the only branching move was just made by the computer.
 }
 
 async function validateUserMove(userMove) {
@@ -242,6 +239,33 @@ function pruneMoveTree() {
   currBranch = moveTree;
 }
 
+async function restartIfLeafIsReached() {
+  if (Object.keys(currBranch).length != 0) return false;
+  while (Object.keys(currBranch).length == 0) {
+    game = new Chess();
+    board.setPosition(game.fen());
+    currBranch = moveTree;
+
+    // prune moveTree
+    pruneMoveTree();
+
+    // check if all branches have been played
+    if (Object.keys(currBranch).length == 0) {
+      roundComplete();
+      return;
+    }
+
+    // let computer play first move(s) maybe
+    if (localStorage['skipMoves'] == 'true') {
+      await playFirstMoves();
+    } else if (localStorage.getItem('playAs') == 'black') {
+      console.log('about to play the only first move');
+      await computerMove();
+    }
+  }
+  return true;
+}
+
 const delay = ms => new Promise(res => setTimeout(res, ms));
 async function setUpBoard() {
   console.log('calling setUpBoard w/ localstorage', localStorage['notation']);
@@ -257,17 +281,15 @@ async function setUpBoard() {
 
   // let computer play the first move(s) maybe
   if (localStorage['skipMoves'] == 'true') {
-    playFirstMoves();
+    await playFirstMoves();
   } else if (localStorage.getItem('playAs') == 'black') {
-    computerMove();
+    await computerMove();
   }
 
-  // on input from user:
-  //   if input was not a valid option on current branch, throw error
-  //   if there are no more moves on branch, recurse to last point at which branch has 1 path and delete that branch you just went down
-  //   choose random move from branch and change current branch
-  board.addEventListener('drop', async (e) => {
+  // edge case where first branching move played by computer was the last move in the line
+  await restartIfLeafIsReached();
 
+  board.addEventListener('drop', async (e) => {
     // validate users move
     move = getMove(e.detail.newPosition, e.detail.oldPosition);
     try {
@@ -279,57 +301,12 @@ async function setUpBoard() {
     console.log('user move validated', move, 'currBranch is now', currBranch);
     game.move(move);
     currBranch = currBranch[move];
-    // console.log('currBranch set to', currBranch);
-    await delay(200);
 
-    // if end of branch is reached, restart and play computer first move(s), if any
-    if (Object.keys(currBranch).length == 0) {
-      game = new Chess();
-      board.setPosition(game.fen());
-      currBranch = moveTree;
-
-      // prune moveTree
-      pruneMoveTree();
-
-      // check if all branches have been played
-      if (Object.keys(currBranch).length == 0) {
-        roundComplete();
-        return;
-      }
-
-      // let computer play first move(s) maybe
-      if (localStorage['skipMoves'] == 'true') {
-        playFirstMoves();
-      } else if (localStorage.getItem('playAs') == 'black') {
-        computerMove();
-      }
-    } else {
-      // play computer response
-      computerMove();
-    }
-
-    // if end of branch is reached, restart and play first move again
-    if (Object.keys(currBranch).length == 0) {
-      await delay(1000);
-      game = new Chess();
-      board.setPosition(game.fen());
-
-      // prune moveTree
-      pruneMoveTree();
-
-      // check if all branches have been played
-      if (Object.keys(moveTree).length == 0) {
-        roundComplete();
-        return;
-      }
-
-      // let computer play first move(s) maybe
-      if (localStorage['skipMoves'] == 'true') {
-        playFirstMoves();
-      } else if (localStorage.getItem('playAs') == 'black') {
-        computerMove();
-      }
-    }
+    // check if you've reached a leaf after the initial moves, after user's move, and after computer's response.
+    if (!(await restartIfLeafIsReached())) {
+      await computerMove();
+    };
+    await restartIfLeafIsReached();
   });
   
 }
