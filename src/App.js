@@ -7,6 +7,7 @@ import { createMoveTree, makeMove, getMove } from './stringParser';
 import { Chess } from 'chess.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
+import { Helmet } from 'react-helmet';
 
 // create moveTree nested dictionary and current branch var (shallow copy)
 // play the first (few?) move(s) without input for white
@@ -391,6 +392,11 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <Helmet>
+            <meta charSet="utf-8" />
+            <title>Chess Helper</title>
+            <link rel="canonical" href="../public/favicon.ico" />
+            </Helmet>
         <chess-board 
           id="board"
           orientation="black"
