@@ -211,6 +211,10 @@ async function validateUserMove(userMove) {
     if (moveKeys[i].length >= 4 && (moveKeys[i][0] + moveKeys[i].slice(2) == userMove || moveKeys[i][0] + moveKeys[i].slice(2, -1) == userMove)) {
       userMove = moveKeys[i];
       break;
+      // check if contains '='
+    } else if (moveKeys[i].includes('=') && moveKeys[i].slice(0, moveKeys[i].indexOf('=')) == userMove) {
+      userMove = moveKeys[i];
+      break;
     }
   }
 
