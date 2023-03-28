@@ -7,6 +7,24 @@
   --text-color: rgb(76, 25, 0);
 }
 
+/* create media query for mobile that hides everythign and shows message "not supported" */
+@media (max-width: 890px) {
+  .App {
+    display: none !important;
+  }
+  .not-supported {
+    display: block !important;
+  }
+}
+
+.not-supported {
+  display: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color);
+  text-align: center;
+}
+
 body {
   padding: 0;
   margin: 0;

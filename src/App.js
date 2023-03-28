@@ -16,7 +16,6 @@ import { Helmet } from 'react-helmet';
 //   if there are no more moves on branch, recurse to last point at which branch has 1 path and delete that branch you just went down
 //   choose random move from branch and change current branch
 
-
 // if you can fill the textarea with a value from localStorage, do it and call setUpBoard();
 // either way, set up an event listener: on textarea input, save the value to localStorage and reload the page
 setTimeout(() => {
@@ -395,7 +394,8 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
+      <div>
+        <div className="App">
         <Helmet>
             <meta charSet="utf-8" />
             <title>Chess Helper</title>
@@ -408,6 +408,11 @@ class App extends Component {
         </chess-board>
         <Sidebar />
       </div>
+      <div className="not-supported">
+        <h1>Sorry, this app is not supported on your device.</h1>
+      </div>
+      </div>
+      
     );
   }
 }
