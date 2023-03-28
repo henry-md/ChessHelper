@@ -216,7 +216,7 @@ async function validateUserMove(userMove) {
       userMove = moveKeys[i];
       break;
     }
-  }
+  } 
 
   // console.log('event called on userMove', userMove, 'with event object', e.detail);
   if (currBranch[userMove] == undefined) {
