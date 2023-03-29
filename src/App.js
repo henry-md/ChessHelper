@@ -100,6 +100,7 @@ document.onkeydown = function (e) {
   }
 }
 
+// sets position based on leftCounter
 function setPastPosition() {
   let gameHistory = game.history({ verbose: true });
   let relevantFen = game.history({ verbose: true })[gameHistory.length - 1 - leftCounter].after;
@@ -140,10 +141,10 @@ function hint() {
   if (gameOver) return;
   let correctMove = makeMove(currBranch);
   let originalPosition = game.fen();
-  game.move(correctMove);
-  board.setPosition(game.fen());
+  let newGame = new Chess(originalPosition);
+  newGame.move(correctMove);
+  board.setPosition(newGame.fen());
   setTimeout(() => {
-    game.load(originalPosition);
     board.setPosition(game.fen());
   }, 300);
 
