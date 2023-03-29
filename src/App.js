@@ -201,8 +201,6 @@ async function playFirstMoves() {
 async function validateUserMove(userMove) {
   if (currBranch[userMove + '+'] != undefined) userMove += '+';
   if (currBranch[userMove + '#'] != undefined) userMove += '#';
-  if (currBranch['O-O'] != undefined && (userMove == 'Kg8' || userMove== 'Kg1')) userMove = 'O-O';
-  if (currBranch['O-O-O'] != undefined && (userMove == 'Kc8' || userMove == 'Kc1')) userMove = 'O-O-O';
 
   // check for moves like Nfd2 and Nfd2+ and Nfd2#
   let moveKeys = Object.keys(currBranch);
@@ -212,6 +210,12 @@ async function validateUserMove(userMove) {
       break;
       // check if contains '='
     } else if (moveKeys[i].includes('=') && moveKeys[i].slice(0, moveKeys[i].indexOf('=')) == userMove) {
+      userMove = moveKeys[i];
+      break;
+    } else if (moveKeys[i].slice(0, 3) == 'O-O' && (userMove == 'Kg8' || userMove == 'Kg1')) {
+      userMove = moveKeys[i];
+      break;
+    } else if (moveKeys[i].slice(0, 5) == 'O-O-O' && (userMove == 'Kc8' || userMove == 'Kc1')) {
       userMove = moveKeys[i];
       break;
     }
