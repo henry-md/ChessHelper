@@ -151,7 +151,6 @@ function hint() {
 }
 
 async function computerMove() {
-  await delay(100);
   // check if there are any moves left
   if (Object.keys(currBranch).length == 0) {
     roundComplete();
@@ -168,11 +167,9 @@ async function computerMove() {
     lastBranchingKey = move;
   }
   currBranch = currBranch[move];
-  await delay(100);
 }
 
 async function playFirstMoves() {
-
   if (currBranch == undefined) {
     console.log('ERROR: currBranch is undefined');
     return;
@@ -180,6 +177,7 @@ async function playFirstMoves() {
 
   // play all the moves with no alternatives
   while (Object.keys(currBranch).length == 1 && currBranch != previousBranchingDict) {
+    await delay(200);
     await computerMove();
   }
 
@@ -195,7 +193,6 @@ async function playFirstMoves() {
   if (localStorage.getItem('playAs') != whosMove) {
     await delay(500); // wait extra long before making branching move
     await computerMove();
-    await delay(500);
   }
 }
 
@@ -253,6 +250,7 @@ function pruneMoveTree() {
 async function restartIfLeafIsReached() {
   if (Object.keys(currBranch).length != 0) return false;
   while (Object.keys(currBranch).length == 0) {
+    await delay(700);
     numLeavesVisited++;
     let progressBar = document.getElementsByClassName('progress')[0];
     if (progressBar != undefined) {
@@ -276,6 +274,7 @@ async function restartIfLeafIsReached() {
       await playFirstMoves();
     } else if (localStorage.getItem('playAs') == 'black') {
       console.log('about to play the only first move');
+      delay(200);
       await computerMove();
     }
   }
@@ -299,6 +298,7 @@ async function setUpBoard() {
   if (localStorage['skipMoves'] == 'true') {
     await playFirstMoves();
   } else if (localStorage.getItem('playAs') == 'black') {
+    await delay(200);
     await computerMove();
   }
 
@@ -320,6 +320,7 @@ async function setUpBoard() {
 
     // check if you've reached a leaf after the initial moves, after user's move, and after computer's response.
     if (!(await restartIfLeafIsReached())) {
+      await delay(200);
       await computerMove();
     };
     await restartIfLeafIsReached();
