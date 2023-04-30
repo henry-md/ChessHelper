@@ -415,7 +415,7 @@ class App extends Component {
         <Sidebar />
       </div>
       <div className="not-supported">
-        <h1>Sorry, this app is not supported on your device.</h1>
+        <h1>I haven't made a UI for mobile yet :&#40;</h1>
       </div>
       </div>
       
