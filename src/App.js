@@ -6,8 +6,9 @@ import $ from 'jquery';
 import { createMoveTree, makeMove, getMove } from './stringParser';
 import { Chess } from 'chess.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
+import { faToggleOff, faToggleOn, faEye } from "@fortawesome/free-solid-svg-icons";
 import { Helmet } from 'react-helmet';
+import { Heap } from 'heap-js';
 
 // create moveTree nested dictionary and current branch var (shallow copy)
 // play the first (few?) move(s) without input for white
@@ -19,7 +20,7 @@ import { Helmet } from 'react-helmet';
 // if you can fill the textarea with a value from localStorage, do it and call setUpBoard();
 // either way, set up an event listener: on textarea input, save the value to localStorage and reload the page
 setTimeout(() => {
-  let textarea = document.getElementById('notationArea');
+  let textarea = document.getElementById('notation-area');
   if (textarea.value == '' && localStorage['notation'] != undefined) {
     textarea.value = localStorage['notation'];
     setUpBoard();
@@ -33,6 +34,9 @@ setTimeout(() => {
     window.location.reload();
   });
 
+  // hide modal initially
+  var modal = document.getElementsByClassName("modal")[0];
+  modal.style.display = "none";
 }, 100);
 
 // set up color
@@ -72,6 +76,7 @@ let game = new Chess();
 let board;
 let moveTree;
 let currBranch; // shallow copy
+let blindspotMaxHeap = new Heap();
 let lastBranchingDict;
 let previousBranchingDict = {};
 let lastBranchingKey = '';
@@ -148,6 +153,27 @@ function hint() {
     board.setPosition(game.fen());
   }, 300);
 
+}
+
+function toggleModal() {
+  // show modal
+  var modal = document.getElementsByClassName("modal")[0];
+  if (modal.style.display === "none") {
+      modal.style.display = "flex";
+  } else {
+      modal.style.display = "none";
+  }
+}
+
+function showBlindspots() {
+  toggleModal();
+  let modal = $('.modal-content p');
+  modal.html(calculateBlindspots());
+}
+
+// maintain blindspot max heap
+function calculateBlindspots(turn = 'white', head=moveTree) {
+  return 'blindspots';
 }
 
 async function computerMove() {
@@ -378,7 +404,13 @@ class Sidebar extends Component {
         <h3>Theory Training!</h3>
         <div className="info-bar regularText"></div>
         <button className="hint" onClick={hint}>Hint</button>
-        <textarea id="notationArea"></textarea>
+        <div id='textarea-and-overlay'>
+          <textarea id="notation-area"></textarea>
+          <button id="overlay" onClick={showBlindspots}>
+            <FontAwesomeIcon class='small-eye' icon={faEye} />
+          </button>
+        </div>
+        
         
         <div className="color-picker">
           Play as: 
@@ -397,7 +429,6 @@ class Sidebar extends Component {
 }
 
 class App extends Component {
-
   render() {
     return (
       <div>
@@ -416,6 +447,12 @@ class App extends Component {
       </div>
       <div className="not-supported">
         <h1>I haven't made a UI for mobile yet :&#40;</h1>
+      </div>
+      <div className="modal">
+        <div className="modal-content">
+          <button className="close" onClick={toggleModal}>&times;</button>
+          <p>Some text in the Modal..</p>
+        </div>
       </div>
       </div>
       

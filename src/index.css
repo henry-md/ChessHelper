@@ -82,8 +82,6 @@ chess-board {
 }
 
 textarea {
-  width: 80%;
-  height: 380px;
   border: 1px solid var(--textarea-border);
   border-radius: 4px;
   padding: 10px;
@@ -226,4 +224,75 @@ button.skipMoves {
   border-radius: 0 4px 4px 4px;
   background-color: rgb(181, 136, 99);
   transition: width 1s ease-in-out;
+}
+
+/* textarea and overlay */
+#textarea-and-overlay {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  width: 80%;
+  height: 350px;
+}
+
+#notation-area {
+  width: 100%;
+  height: 100%;
+}
+
+#overlay {
+  position: absolute;
+  bottom: -22px;
+  right: 0px;
+  color: grey;
+}
+
+.small-eye {
+  width: 17px;
+}
+
+/* modal */
+.modal {
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 999;
+  padding-top: 50px;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* allows scrolling */
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+  animation-name: fadeIn;
+  animation-duration: 0.4s;
+  -webkit-animation-name: fadeIn;
+  -webkit-animation-duration: 0.4s;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  position: fixed;
+  top: 200px;
+  width: 50%;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  animation-name: scrollDown;
+  animation-duration: 0.4s;
+  -webkit-animation-name: scrollDown;
+  -webkit-animation-duration: 0.4s;
+}
+
+/* fade in animation */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+/* scroll in from above animation */
+@keyframes scrollDown {
+  from {top: -300px;}
+  to {top: 200px;}
 }
