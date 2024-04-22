@@ -28,9 +28,8 @@ setTimeout(() => {
 
   // set event listener
   textarea.addEventListener('input', () => {
-    console.log('textarea value is', textarea.value);
+    console.log('textarea input');
     localStorage['notation'] = textarea.value;
-    console.log('now localStorage notation is', localStorage['notation']);
     window.location.reload();
   });
 

@@ -1,0 +1,3 @@
+
+- make it prune in a way that weights branches. So don't give me the cozio 33% of the time just because it's one of 3 moves. Give me the berlin or a6 almost all the time. 
+- clean up app.js so there isn't so much shit in one file. Put some components in their own files
